@@ -20,6 +20,7 @@ router.post("/signup",wrapAsync(async(req,res)=>{
         req.flash("error",e.message);
         res.redirect("/signup");
     }
+    
 }));
 
 router.get("/login",(req,res)=>{
@@ -28,6 +29,8 @@ router.get("/login",(req,res)=>{
 
 router.post("/login",passport.authenticate("local", { failureRedirect: '/login',failureFlash:true }),async(req,res)=>{
     req.flash("success","Welcome to Wanderlust!");
-})
+    res.redirect("/listings");
+});
 
 module.exports=router;
+
