@@ -1,21 +1,8 @@
 const express=require("express");
 const router=express.Router();
 const wrapAsync=require("../utils/wrapAsync.js");
-const {listingSchema}=require("../schema.js");
 const Listing=require("../models/listing.js");
-const ExpressError=require("../utils/ExpressError.js");
-const {isLoggedIn}=require("../middleware.js");
-
-const validateListing=(req,res,next)=>{
-    let {error}=listingSchema.validate(req.body);
-
-    if(error){
-        let errMsg=error.details.map((el)=>el.message).join(",");
-        throw new ExpressError(400,errMsg);
-    }else{
-        next();
-    }
-};
+const {isLoggedIn,isOwner,validateListing}=require("../middleware.js");
 
 // Index routing
 router.get("/",wrapAsync(async(req,res)=>{
@@ -50,7 +37,7 @@ router.get("/",wrapAsync(async(req,res)=>{
     res.redirect("/listings");   
  }));
  // edit route
- router.get("/:id/edit",isLoggedIn,wrapAsync(async(req,res)=>{
+ router.get("/:id/edit",isLoggedIn,isOwner,wrapAsync(async(req,res)=>{
     let {id}=req.params;
     const listing=await Listing.findById(id);
     if(!listing){
@@ -60,14 +47,15 @@ router.get("/",wrapAsync(async(req,res)=>{
     res.render("listings/edit.ejs",{listing});
  }));
  // update route
- router.put("/:id",isLoggedIn,validateListing,wrapAsync(async(req,res)=>{
-     let {id}=req.params;
-     await Listing.findByIdAndUpdate(id,{...req.body.listing});
-     req.flash("success","New listing Updated");
-     res.redirect(`/listings/${id}`);
+ router.put("/:id",isLoggedIn,isOwner,validateListing,wrapAsync(async(req,res)=>{
+    let {id}=req.params;
+    let listing=await Listing.findById(id);
+    await Listing.findByIdAndUpdate(id,{...req.body.listing});
+    req.flash("success","New listing Updated");
+    res.redirect(`/listings/${id}`);
  }));
  // delete route
- router.delete("/:id",isLoggedIn,wrapAsync(async(req,res)=>{
+ router.delete("/:id",isLoggedIn,isOwner,wrapAsync(async(req,res)=>{
      let {id}=req.params;
      let deletedListing=await Listing.findByIdAndDelete(id);
      console.log(deletedListing);
