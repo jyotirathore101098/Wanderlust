@@ -1,3 +1,8 @@
+if(process.env.NODE_ENV !="production"){
+    require('dotenv').config();
+}
+//console.log(process.env.SECRET); // remove this after you've confirmed it is working
+
 const express=require("express");
 const app=express();
 const mongoose=require("mongoose");
@@ -61,16 +66,6 @@ app.use((req,res,next)=>{
     res.locals.currUser = req.user;
     next();
 });
-
-// app.get("/demouser",async(req,res)=>{
-//     let fakeuser=new User({
-//         email:"student@gmail.com",
-//         username:"jyoti"
-//     });
-
-//    let registeredUser =await User.register(fakeuser,"store password here");
-//     res.send(registeredUser);
-// });
 
 app.use("/listings",listingRouter);
 app.use("/listings/:id/reviews",reviewRouter);
